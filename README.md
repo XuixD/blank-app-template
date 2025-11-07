@@ -1,19 +1,33 @@
-# 🎈 Blank app template
+import streamlit as st
+import pandas as pd
+import requests
 
-A simple Streamlit app template for you to modify!
+st.title("📊 Buscador de Datos Deportivos - El Xui Stats")
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+league = st.selectbox("Selecciona una liga", [
+    "Premier League",
+    "La Liga",
+    "Serie A",
+    "Bundesliga",
+    "Ligue 1",
+    "MLS"
+])
 
-### How to run it on your own machine
+st.write(f"Buscando datos de: **{league}**...")
 
-1. Install the requirements
+url = "https://www.scorebat.com/video-api/v3/feed/?token=demo"
 
-   ```
-   $ pip install -r requirements.txt
-   ```
+try:
+    data = requests.get(url).json()
+    matches = data.get("response", [])
+    
+    df = pd.DataFrame([{
+        "Partido": m["title"],
+        "Competición": m["competition"],
+        "Fecha": m["date"]
+    } for m in matches if league.lower() in m["competition"].lower()])
 
-2. Run the app
+    st.dataframe(df)
 
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+except Exception as e:
+    st.error("Error al obtener datos.")
